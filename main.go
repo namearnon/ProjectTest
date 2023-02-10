@@ -3,6 +3,7 @@ package main
 import (
 	"ProjectTest/middlewares"
 	"ProjectTest/route"
+	"errors"
 	"log"
 	"os"
 
@@ -20,6 +21,12 @@ func main() {
 		AllowOrigins:     []string{"*"},
 	}))
 	route.TestRoute(e)
+	if _, err := os.Stat("./images"); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir("./images", os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 	var port = os.Getenv("PORT")
 	if port == "" {
 		port = "9999"
