@@ -87,16 +87,16 @@ func (s *BeerService) PostBeer(postData *model.GetBeerData) map[string]interface
 		}
 		expension := strings.Split(postData.BeerImage.Filename, ".")[1]
 		Beer := model.Beer{
-			BeerName:  postData.BeerName,
-			BeerType:  postData.BeerType,
-			BeerDesc:  postData.BeerDesc,
-			BearImage: postData.BeerImage.Filename}
+			BeerName: postData.BeerName,
+			BeerType: postData.BeerType,
+			BeerDesc: postData.BeerDesc}
 		Log := model.Log{
 			LogMethod: "POST",
-			LogDesc:   "ซื่อเบียร์ : " + postData.BeerName + "ประเภท : " + postData.BeerType + " รายละเอียด : " + postData.BeerDesc,
+			LogDesc:   "ซื่อเบียร์ : " + postData.BeerName + " ประเภท : " + postData.BeerType + " รายละเอียด : " + postData.BeerDesc,
 		}
 
 		db.Create(&Beer)
+		db.Exec("Update beer set bear_image = '"+strconv.Itoa(Beer.ID)+"."+expension+"' Where id = ?", Beer.ID)
 		db.Create(&Log)
 		dst, err := os.Create("./images/" + strconv.Itoa(Beer.ID) + "." + expension)
 		if io.Copy(dst, src); err != nil {
@@ -142,13 +142,14 @@ func (s *BeerService) PutBeer(postData *model.GetBeerData) map[string]interface{
 			}
 		}
 	}
-	bl := db.Exec("Update beer set beer_name = CASE WHEN length('"+postData.BeerName+"') > 0 Then '"+postData.BeerName+"' ELSE beer_name END, "+
+	db.Exec("Update beer set beer_name = CASE WHEN length('"+postData.BeerName+"') > 0 Then '"+postData.BeerName+"' ELSE beer_name END, "+
 		"beer_type = CASE WHEN length('"+postData.BeerType+"') > 0 Then '"+postData.BeerType+"' ELSE beer_type END,"+
 		"beer_desc = CASE WHEN length('"+postData.BeerDesc+"') > 0 Then '"+postData.BeerDesc+"' ELSE beer_desc END Where id = ?", postData.ID)
-	log.Println(bl.Error)
+	Beer := model.Beer{}
+	db.Raw("SELECT * FROM beer Where id = ?", postData.ID).Scan(&Beer)
 	Log := model.Log{
 		LogMethod: "PUT",
-		LogDesc:   "ซื่อเบียร์ : " + postData.BeerName + "ประเภท : " + postData.BeerType + " รายละเอียด : " + postData.BeerDesc,
+		LogDesc:   "ซื่อเบียร์ : " + Beer.BeerName + " ประเภท : " + Beer.BeerType + " รายละเอียด : " + Beer.BeerDesc,
 	}
 	db.Create(&Log)
 	return map[string]interface{}{
@@ -163,11 +164,16 @@ func (s *BeerService) DeleteBeer(postData *model.GetBeerData) map[string]interfa
 	}
 	defer db.Close()
 	Beer := model.Beer{}
-	db.Raw("SELECT bear_image FROM beer Where id = ?", postData.ID).Scan(&Beer)
+	db.Raw("SELECT * FROM beer Where id = ?", postData.ID).Scan(&Beer)
 	e := os.Remove("./images/" + Beer.BearImage)
 	if e != nil {
 		log.Fatal(e)
 	}
+	Log := model.Log{
+		LogMethod: "DELETE",
+		LogDesc:   "ซื่อเบียร์ : " + Beer.BeerName + " ประเภท : " + Beer.BeerType + " รายละเอียด : " + Beer.BeerDesc,
+	}
+	db.Create(&Log)
 	db.Exec("DELETE FROM beer Where id = ?", postData.ID)
 
 	return map[string]interface{}{"message": "success"}
