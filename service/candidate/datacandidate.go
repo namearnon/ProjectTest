@@ -141,6 +141,7 @@ func (s *BeerService) PutBeer(postData *model.GetBeerData) map[string]interface{
 				"message": 500,
 			}
 		}
+		bytes.Close()
 	}
 	db.Exec("Update beer set beer_name = CASE WHEN length('"+postData.BeerName+"') > 0 Then '"+postData.BeerName+"' ELSE beer_name END, "+
 		"beer_type = CASE WHEN length('"+postData.BeerType+"') > 0 Then '"+postData.BeerType+"' ELSE beer_type END,"+
@@ -157,7 +158,7 @@ func (s *BeerService) PutBeer(postData *model.GetBeerData) map[string]interface{
 	}
 }
 
-func (s *BeerService) DeleteBeer(postData *model.GetBeerData) map[string]interface{} {
+func (s *BeerService) DeleteBeer(postData *model.GetBeerData) map[string]string {
 	db, err := s.ctx.DB()
 	if err != nil {
 		log.Println(err)
@@ -176,5 +177,5 @@ func (s *BeerService) DeleteBeer(postData *model.GetBeerData) map[string]interfa
 	db.Create(&Log)
 	db.Exec("DELETE FROM beer Where id = ?", postData.ID)
 
-	return map[string]interface{}{"message": "success"}
+	return map[string]string{"message": "success"}
 }

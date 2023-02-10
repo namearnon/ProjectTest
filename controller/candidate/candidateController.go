@@ -53,11 +53,6 @@ func (*ControllerTest) BeerUpdate(c echo.Context) error {
 		log.Println(err)
 	}
 	id := c.Param("id")
-	if len(id) == 0 {
-		c.JSON(405, map[string]string{
-			"message": "โปรดแกรมกรอกไอดี",
-		})
-	}
 	beerName := c.FormValue("beerName")
 	beerType := c.FormValue("beerType")
 	BeerDesc := c.FormValue("beerDesc")
@@ -71,11 +66,6 @@ func (*ControllerTest) BeerUpdate(c echo.Context) error {
 func (*ControllerTest) BeerDelete(c echo.Context) error {
 	cc := c.(core.IContext)
 	id := c.Param("id")
-	if len(id) == 0 {
-		c.JSON(405, map[string]string{
-			"message": "โปรดแกรมกรอกไอดี",
-		})
-	}
 	postData := model.GetBeerData{ID: id}
 	data := service.BeerSer(cc).DeleteBeer(&postData)
 	return c.JSON(204, data)
