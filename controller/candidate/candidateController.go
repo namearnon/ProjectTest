@@ -65,7 +65,7 @@ func (*ControllerTest) BeerUpdate(c echo.Context) error {
 
 	// json.Unmarshal(body, &postData)
 	data := service.BeerSer(cc).PutBeer(&postData)
-	return c.JSON(201, data)
+	return c.JSON(204, data)
 }
 
 func (*ControllerTest) BeerDelete(c echo.Context) error {
@@ -78,5 +78,5 @@ func (*ControllerTest) BeerDelete(c echo.Context) error {
 	}
 	postData := model.GetBeerData{ID: id}
 	data := service.BeerSer(cc).DeleteBeer(&postData)
-	return c.JSON(200, data)
+	return c.JSON(204, data)
 }
